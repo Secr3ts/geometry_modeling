@@ -84,6 +84,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include=".gitignore" />
+    <None Include="README.md" />
     <None Include="ReadMe.txt" />
     <None Include="shaders\light.frag.glsl" />
     <None Include="shaders\light.vert.glsl" />

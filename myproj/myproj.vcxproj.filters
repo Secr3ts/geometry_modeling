@@ -19,6 +19,7 @@
     <None Include="shaders\light.frag.glsl" />
     <None Include="shaders\light.vert.glsl" />
     <None Include=".gitignore" />
+    <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myVertex.h">

@@ -769,6 +769,11 @@ void myMesh::subdivisionCatmullClark()
 			continue;
 		}
 
+		if (!twin)
+		{
+			continue;
+		}
+
 		myPoint3D* edge_point = new myPoint3D();
 		edge_point->zeroes();
 
@@ -859,6 +864,11 @@ void myMesh::subdivisionCatmullClark()
 		i = 0.0; // a
 
 		do {
+			if (!he)
+			{
+				he = he->prev->twin;
+			}
+
 			myVertex* va = he->source;
 			myHalfedge* twin = he->twin;
 
@@ -1069,7 +1079,6 @@ void myMesh::triangulate()
 		if (is_triangle)
 			continue;
 
-		// Multi-pass ear removal algorithm for non-convex polygons
 		int max_iterations = 1000;
 		int iteration = 0;
 
@@ -1077,7 +1086,6 @@ void myMesh::triangulate()
 		{
 			iteration++;
 
-			// Count remaining halfedges in this face
 			myHalfedge* start_he = face->adjacent_halfedge;
 			if (!start_he) break;
 
@@ -1088,13 +1096,11 @@ void myMesh::triangulate()
 				he = he->next;
 			} while (he != start_he && edge_count < 1000);
 
-			// If triangle, we're done
 			if (edge_count <= 3) {
 				face->computeNormal();
 				break;
 			}
 
-			// Try to find and cut an ear in this pass
 			bool ear_found = false;
 			he = start_he;
 
@@ -1107,16 +1113,12 @@ void myMesh::triangulate()
 					continue;
 				}
 
-				// Check if this forms a valid ear
 				if (isValidEar(current))
 				{
-					// Valid ear found: cut it
 					myFace* newFace = triangulate(current);
 					if (newFace)
 					{
 						ear_found = true;
-						// After cutting, face's adjacent_halfedge may have changed
-						// Continue with the updated face's halfedge ring
 						break;
 					}
 				}
@@ -1124,17 +1126,16 @@ void myMesh::triangulate()
 				he = he->next;
 			}
 
-			// If no ear was found in this pass, bail out to avoid infinite loop
 			if (!ear_found)
 			{
-				std::cout << "Warning: Could not find valid ear to cut. Polygon may be degenerate." << std::endl;
+				std::cout << "Polygon degenerate" << std::endl;
 				break;
 			}
 		}
 
 		if (iteration >= max_iterations)
 		{
-			std::cout << "Warning: Triangulation hit iteration limit for face. Polygon may be degenerate." << std::endl;
+			std::cout << "Hit iteration limit for face. " << std::endl;
 		}
 	}
 }
@@ -1167,11 +1168,9 @@ bool myMesh::isValidEar(myHalfedge* current)
 	if (!current || !current->next || !current->prev)
 		return false;
 
-	// Check convexity
 	if (!convex(current->prev, current, current->next))
 		return false;
 
-	// Check for interior points
 	if (point_inside(current))
 		return false;
 
@@ -1194,8 +1193,6 @@ myFace* myMesh::triangulate(myHalfedge* current)
 	myFace* newFace = new myFace();
 
 	// new hedge
-	// h1: c->a (new face)
-	// h2: a->c (old face)
 	myHalfedge* h1 = new myHalfedge();
 	myHalfedge* h2 = new myHalfedge();
 
